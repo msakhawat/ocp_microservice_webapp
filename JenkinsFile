@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_REGISTRY=''
+        IMAGE_REGISTRY_USERNAME=''
+        IMAGE_REGISTRY_PASSWORD=''
+        OC_USERNAME=''
+        OC_PASSWORD=''
+    }
+    parameters {
+        string(name:'GIT_URL', defaultValue: 'https://github.com/msakhawat/FlaskApp.git', description:'Git URL')
+        string(name:'GIT_BRANCH', defaultValue: 'master', description:'Git Branch')
+        string(name:'IMAGE_NAME', defaultValue: 'webapp', description:'Name of output image')
+        string(name:'IMAGE_TAG', defaultValue: '1.0', description:'Tag of output image')
+        string(name:'DEPLOYMENT_NAME', defaultValue: 'webapp', description:'Deployment to trigger in openshift cluster')
+    }
+    stages {
+        stage('Get source code') {
+            steps {
+                echo "git branch: ${params.GIT_BRANCH}, url: ${params.GIT_URL}"
+            }            
+        }
+        stage ('Build Image')
+        {
+            steps{
+             echo "podman build -t ${params.IMAGE_NAME}:${params.IMAGE_TAG} ."
+            }
+        }
+        stage('Push Image')
+        {
+            steps{
+               echo "podman login -u ${IMAGE_REGISTRY_USERNAME} -p ${IMAGE_REGISTRY_PASSWORD} ${IMAGE_REGISTRY}"
+               echo "podman push ${IMAGE_REGISTRY}/${params.IMAGE_NAME}:${params.IMAGE_TAG} ${IMAGE_REGISTRY}"
+            }
+        }
+        stage('Trigger deployment')
+        {
+            steps{
+                echo "oc login -u ${OC_USERNAME} -p ${OC_PASSWORD}"
+                echo "oc rollout restart deploy/${params.DEPLOYMENT_NAME}"
+            }
+        }
+    }
+}

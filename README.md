@@ -1,1 +1,0 @@
-# ocp_microservice_webapp
