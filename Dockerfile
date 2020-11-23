@@ -2,9 +2,8 @@ FROM centos:centos8
 
 RUN yum -y update && yum -y install python3
 
-COPY ./src .
-COPY ./requirments.txt .
-
+COPY . /app
+WORKDIR /app
 RUN pip3 install -r requirments.txt
 
 ENV FLASK_APP=app.py
