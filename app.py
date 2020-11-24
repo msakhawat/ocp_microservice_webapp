@@ -44,7 +44,7 @@ def add_post():
         
         producer = KafkaProducer(client_id='blog_post', bootstrap_servers='kafkaserver1:9092')
         
-        producer.send('Blog_Post', str(post.id).encode())
+        producer.send('blog-post', str(post.id).encode())
         ####
         return redirect('/posts')
     else:
