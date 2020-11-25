@@ -11,6 +11,10 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DATABASE_USER', 'sa')}:{os.getenv('DATABASE_PASSWORD', '1234')}@{os.getenv('DATABASE_INSTANCE_NAME', 'mysql')}/{os.getenv('DATABASE_NAME','blog')}"
 db = SQLAlchemy(app)
 
+KafkaClientId = os.getenv('KAFKA_CLIENT_ID', 'blog_post')
+KafkaBrokers = os.getenv('KAFKA_BROKERS', 'kafkaserver1:9092')
+KafkaTopic = os.getenv('KAFKA_TOPIC', 'blog-post')
+
 class BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -42,9 +46,9 @@ def add_post():
         db.session.commit()
         ####
         
-        producer = KafkaProducer(client_id='blog_post', bootstrap_servers='kafkaserver1:9092')
+        producer = KafkaProducer(client_id=KafkaClientId, bootstrap_servers=KafkaBrokers)
         
-        producer.send('blog-post', str(post.id).encode())
+        producer.send(KafkaTopic, str(post.id).encode())
         ####
         return redirect('/posts')
     else:
